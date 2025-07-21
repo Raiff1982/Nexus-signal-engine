@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+title: Nexus Signal Engine
+version: "1.0.0"
+doi: 10.5281/zenodo.16269918
+authors:
+  - family-names: Harrison
+    given-names: Jonathan
+    orcid: https://orcid.org/0000-0002-5892-4604
+date-released: 2024-07-21
+url: https://github.com/Raiff1982/Nexus-signal-engine
+repository-code: https://github.com/Raiff1982/Nexus-signal-engine
+license: MIT
+abstract: >
+  The Nexus Signal Engine is an adversarially robust, agent-driven, 
+  forensic-grade AI signal analysis and memory system. It combines 
+  multi-perspective reasoning, cryptographic memory integrity, and 
+  NLP-based obfuscation defense to deliver real-time, auditable 
+  signal analysis. Published open source and archived on Zenodo.
+keywords:
+  - AI ethics
+  - signal analysis
+  - adversarial AI
+  - memory integrity
+  - NLP
+  - explainable AI
