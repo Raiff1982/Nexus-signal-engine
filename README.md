@@ -54,10 +54,10 @@ Citation
 
 If you use or build on this work, cite the Zenodo archive and this GitHub repo:
 
-@software{jonathan_harrison_nexus_2024,
+@software{jonathan_harrison_nexus_2025,
   author       = {Jonathan Harrison},
   title        = {Nexus Signal Engine},
-  year         = 2024,
+  year         = 2025,
   publisher    = {Zenodo},
   doi          = {10.5281/zenodo.16269918},
   url          = {https://github.com/Raiff1982/Nexus-signal-engine}
