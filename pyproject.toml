@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nexus-signal-engine"
+version = "1.0.0"
+description = "Adversarially robust, forensic-grade, agent-driven AI signal analysis and memory engine."
+readme = "README.md"
+authors = [
+  { name = "Jonathan Harrison", email = "harrison82_95@hotmail.com", orcid = "0009-0003-7005-8187" }
+]
+license = { file = "LICENSE" }
+keywords = [
+  "AI",
+  "ethics",
+  "signal-analysis",
+  "adversarial",
+  "memory",
+  "audit",
+  "NLP",
+  "explainable-AI"
+]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Security"
+]
+dependencies = [
+    "numpy>=1.22",
+    "rapidfuzz>=3.0.0",
+    "nltk>=3.8",
+    "filelock>=3.13",
+    "tenacity>=8.2.3"
+]
+requires-python = ">=3.8"
+
+[project.urls]
+Homepage = "https://github.com/Raiff1982/Nexus-signal-engine"
+Repository = "https://github.com/Raiff1982/Nexus-signal-engine"
+Documentation = "https://github.com/Raiff1982/Nexus-signal-engine#readme"
+Issues = "https://github.com/Raiff1982/Nexus-signal-engine/issues"
+DOI = "https://doi.org/10.5281/zenodo.16269918"
