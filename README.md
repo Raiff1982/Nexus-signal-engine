@@ -92,3 +92,14 @@ Open a GitHub issue or reach out directly.
 ⸻
 
 This project sets the bar for ethical AI signal integrity and memory. If you want to build trustworthy AI, start here—or play catch-up.
+<details>
+<summary>BibTeX (Zenodo DOI)</summary>
+@software{jonathan_harrison_nexus_2025,
+  author       = {Jonathan Harrison},
+  title        = {Nexus Signal Engine},
+  year         = 2025,
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.16269918},
+  url          = {https://github.com/Raiff1982/Nexus-signal-engine}
+}
+</details>
