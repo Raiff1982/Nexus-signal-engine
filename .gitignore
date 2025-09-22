@@ -1,0 +1,36 @@
+# dependencies
+node_modules/
+# build output
+dist/
+.next/
+out/
+build/
+# caches
+.pnpm-store/
+.eslintcache
+.cache/
+# env & secrets
+.env
+.env.*
+*.key
+*.pem
+*.crt
+# logs & local db
+*.log
+*.sqlite
+*.db
+# binaries/artifacts
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.pdf
+*.docx
+*.exe
+*.dmg
+*.pkg
+*.mp4
+*.mov
+*.avi
+*.mp3
+*.wav
