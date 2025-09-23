@@ -42,6 +42,17 @@ class ContentFeatures:
     confidence: float
     detection_time: datetime
 
+    def __post_init__(self):
+        """Validate the features after initialization."""
+        if not 0.0 <= self.risk_score <= 1.0:
+            raise ValueError(
+                f"Risk score must be between 0.0 and 1.0, got {self.risk_score}"
+            )
+        if not 0.0 <= self.confidence <= 1.0:
+            raise ValueError(
+                f"Confidence must be between 0.0 and 1.0, got {self.confidence}"
+            )
+
 class MultimodalAnalyzer:
     """Analyzes content across multiple modalities."""
     

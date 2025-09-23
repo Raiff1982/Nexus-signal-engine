@@ -22,10 +22,22 @@ class BehaviorType(str, Enum):
 
 class ThreatLevel(str, Enum):
     """Threat levels for detected patterns."""
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    CRITICAL = "critical"
+    NONE = "none"  # 0.0
+    LOW = "low"  # 0.25
+    MEDIUM = "medium"  # 0.5
+    HIGH = "high"  # 0.75
+    CRITICAL = "critical"  # 1.0
+
+    def to_float(self) -> float:
+        """Convert threat level to float value."""
+        values = {
+            self.NONE: 0.0,
+            self.LOW: 0.25,
+            self.MEDIUM: 0.5,
+            self.HIGH: 0.75,
+            self.CRITICAL: 1.0
+        }
+        return values[self]
 
 @dataclass
 class BehaviorPattern:
@@ -38,6 +50,13 @@ class BehaviorPattern:
     last_seen: datetime
     frequency: int = 0
     metadata: Dict = field(default_factory=dict)
+
+    def __post_init__(self):
+        """Validate the pattern after initialization."""
+        if not 0.0 <= self.confidence <= 1.0:
+            raise ValueError(
+                f"Confidence must be between 0.0 and 1.0, got {self.confidence}"
+            )
 
 @dataclass
 class ActivityNode:

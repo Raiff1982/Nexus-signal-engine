@@ -80,9 +80,9 @@ class ThreatDetector:
         # Behavioral features
         if behavior:
             features.update({
-                'behavior_threat_level': float(behavior.threat_level.value),
+                'behavior_threat_level': behavior.threat_level.to_float(),
                 'behavior_frequency': behavior.frequency,
-                'behavior_duration': behavior.duration.total_seconds(),
+                'behavior_duration': (behavior.last_seen - behavior.first_seen).total_seconds(),
                 'behavior_confidence': behavior.confidence
             })
         

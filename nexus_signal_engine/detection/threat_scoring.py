@@ -86,16 +86,11 @@ class ThreatScorer:
         behavior: BehaviorPattern
     ) -> Tuple[float, Dict[str, Any]]:
         """Score behavior patterns."""
-        # Map threat levels to scores
-        threat_scores = {
-            ThreatLevel.NONE: 0.0,
-            ThreatLevel.LOW: 0.25,
-            ThreatLevel.MEDIUM: 0.5,
-            ThreatLevel.HIGH: 0.75,
-            ThreatLevel.CRITICAL: 1.0
-        }
+        # Get threat level score
+        base_score = behavior.threat_level.to_float()
         
-        base_score = threat_scores[behavior.threat_level]
+        # Get threat level score
+        base_score = behavior.threat_level.to_float()
         
         # Adjust for frequency and confidence
         frequency_factor = min(1.0, behavior.frequency / 10.0)

@@ -116,15 +116,18 @@ class PatternCorrelator:
                 time_diff = abs(
                     (content.detection_time - pattern.last_seen).total_seconds()
                 )
-                if time_diff <= 60:  # Within 1 minute
+                if time_diff <= self.temporal_window.total_seconds():
                     related_patterns.append(pattern)
             
             if related_patterns:
                 # Calculate correlation score based on temporal proximity
-                correlation_score = min(
-                    1.0,
-                    len(related_patterns) / 5  # Normalize by expected max patterns
-                )
+                time_diffs = [
+                    abs((content.detection_time - p.last_seen).total_seconds())
+                    for p in related_patterns
+                ]
+                max_time = self.temporal_window.total_seconds()
+                temporal_scores = [1 - (diff / max_time) for diff in time_diffs]
+                correlation_score = min(1.0, np.mean(temporal_scores))
                 
                 if correlation_score >= self.min_correlation:
                     correlations.append(CorrelatedPattern(
@@ -238,14 +241,14 @@ class PatternCorrelator:
                 # Combine correlations
                 compound_correlations.append(CorrelatedPattern(
                     correlation_type=CorrelationType.COMPOUND,
-                    content_features=list({
-                        c for corr in content_correlations
-                        for c in corr.content_features
-                    }),
-                    behavior_patterns=list({
-                        p for corr in content_correlations
-                        for p in corr.behavior_patterns
-                    }),
+                    content_features=list(
+                        {id(c): c for corr in content_correlations
+                         for c in corr.content_features}.values()
+                    ),
+                    behavior_patterns=list(
+                        {id(p): p for corr in content_correlations
+                         for p in corr.behavior_patterns}.values()
+                    ),
                     correlation_score=np.mean([
                         c.correlation_score for c in content_correlations
                     ]),

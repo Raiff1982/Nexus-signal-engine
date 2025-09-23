@@ -3,7 +3,7 @@
 import unittest
 import tempfile
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import numpy as np
 from nexus_signal_engine.detection.threat_detector import (
     ThreatDetector,
@@ -31,25 +31,29 @@ class TestThreatDetection(unittest.TestCase):
         
         # Generate benign samples
         for _ in range(10):
+            current_time = datetime.utcnow()
             self.training_data.append({
                 'inputs': {
                     'content': ContentFeatures(
                         content_type=ContentType.TEXT,
+                        raw_content=f"Benign test content {_}",
                         risk_score=np.random.uniform(0, 0.3),
                         features={
                             'complexity': np.random.uniform(0, 0.4),
                             'entropy': np.random.uniform(0, 3),
                             'sentiment': np.random.uniform(-0.2, 0.2)
                         },
-                        detection_time=datetime.utcnow()
+                        confidence=np.random.uniform(0.7, 0.9),
+                        detection_time=current_time
                     ),
                     'behavior': BehaviorPattern(
                         pattern_type=BehaviorType.REPETITIVE,
                         threat_level=ThreatLevel.LOW,
                         frequency=np.random.randint(1, 3),
-                        duration=np.random.uniform(0, 1800),
+                        evidence=[{'type': 'test'}],
+                        first_seen=current_time - timedelta(seconds=np.random.uniform(0, 1800)),
+                        last_seen=current_time,
                         confidence=np.random.uniform(0.7, 0.9),
-                        last_seen=datetime.utcnow(),
                         metadata={}
                     )
                 },
@@ -58,25 +62,29 @@ class TestThreatDetection(unittest.TestCase):
         
         # Generate threatening samples
         for _ in range(10):
+            current_time = datetime.utcnow()
             self.training_data.append({
                 'inputs': {
                     'content': ContentFeatures(
                         content_type=ContentType.TEXT,
+                        raw_content=f"Threatening test content {_}",
                         risk_score=np.random.uniform(0.7, 1.0),
                         features={
                             'complexity': np.random.uniform(0.7, 1.0),
                             'entropy': np.random.uniform(6, 8),
                             'sentiment': np.random.uniform(-0.8, -0.5)
                         },
-                        detection_time=datetime.utcnow()
+                        confidence=np.random.uniform(0.8, 1.0),
+                        detection_time=current_time
                     ),
                     'behavior': BehaviorPattern(
                         pattern_type=BehaviorType.ESCALATING,
                         threat_level=ThreatLevel.HIGH,
                         frequency=np.random.randint(8, 12),
-                        duration=np.random.uniform(3600, 7200),
+                        evidence=[{'type': 'test'}],
+                        first_seen=current_time - timedelta(seconds=np.random.uniform(3600, 7200)),
+                        last_seen=current_time,
                         confidence=np.random.uniform(0.8, 1.0),
-                        last_seen=datetime.utcnow(),
                         metadata={}
                     )
                 },
@@ -89,24 +97,28 @@ class TestThreatDetection(unittest.TestCase):
         self.detector.train(self.training_data)
         
         # Test benign prediction
+        current_time = datetime.utcnow()
         benign_content = ContentFeatures(
             content_type=ContentType.TEXT,
+            raw_content="Test benign content",
             risk_score=0.2,
             features={
                 'complexity': 0.3,
                 'entropy': 2.5,
                 'sentiment': 0.1
             },
-            detection_time=datetime.utcnow()
+            confidence=0.8,
+            detection_time=current_time
         )
         
         benign_behavior = BehaviorPattern(
             pattern_type=BehaviorType.REPETITIVE,
             threat_level=ThreatLevel.LOW,
             frequency=2,
-            duration=1500,
+            evidence=[{'type': 'test'}],
+            first_seen=current_time - timedelta(minutes=15),
+            last_seen=current_time,
             confidence=0.8,
-            last_seen=datetime.utcnow(),
             metadata={}
         )
         
@@ -121,24 +133,28 @@ class TestThreatDetection(unittest.TestCase):
         )
         
         # Test threatening prediction
+        current_time = datetime.utcnow()
         threat_content = ContentFeatures(
             content_type=ContentType.TEXT,
+            raw_content="Test threatening content",
             risk_score=0.9,
             features={
                 'complexity': 0.9,
                 'entropy': 7.5,
                 'sentiment': -0.7
             },
-            detection_time=datetime.utcnow()
+            confidence=0.9,
+            detection_time=current_time
         )
         
         threat_behavior = BehaviorPattern(
             pattern_type=BehaviorType.ESCALATING,
             threat_level=ThreatLevel.HIGH,
             frequency=10,
-            duration=5000,
+            evidence=[{'type': 'test'}],
+            first_seen=current_time - timedelta(minutes=45),
+            last_seen=current_time,
             confidence=0.9,
-            last_seen=datetime.utcnow(),
             metadata={}
         )
         
@@ -170,24 +186,28 @@ class TestThreatDetection(unittest.TestCase):
         os.unlink(model_path)
         
         # Test prediction consistency
+        current_time = datetime.utcnow()
         content = ContentFeatures(
             content_type=ContentType.TEXT,
+            raw_content="Test content for persistence check",
             risk_score=0.8,
             features={
                 'complexity': 0.8,
                 'entropy': 6.5,
                 'sentiment': -0.6
             },
-            detection_time=datetime.utcnow()
+            confidence=0.9,
+            detection_time=current_time
         )
         
         behavior = BehaviorPattern(
             pattern_type=BehaviorType.ESCALATING,
             threat_level=ThreatLevel.HIGH,
             frequency=9,
-            duration=4500,
+            evidence=[{'type': 'test'}],
+            first_seen=current_time - timedelta(minutes=30),
+            last_seen=current_time,
             confidence=0.85,
-            last_seen=datetime.utcnow(),
             metadata={}
         )
         
