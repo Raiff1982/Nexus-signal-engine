@@ -1,5 +1,6 @@
 # Insert this at the top of your file
 from unicode_threat_analyzer import detect_unicode_threat
+from datetime import datetime, UTC
 
 # Then add this block to the beginning of the `process()` method in NexisSignalEngine
 
@@ -7,7 +8,7 @@ from unicode_threat_analyzer import detect_unicode_threat
         if threat_report["threat_level"] == "high":
             final_record = {
                 "hash": self._hash(input_signal),
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "input": input_signal,
                 "threat_report": threat_report,
                 "verdict": "blocked",

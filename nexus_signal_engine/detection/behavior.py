@@ -3,7 +3,7 @@
 from typing import Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass, field
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from collections import defaultdict
 import logging
 import json
@@ -124,7 +124,7 @@ class BehaviorDetector:
         Returns:
             str: Activity ID
         """
-        timestamp = timestamp or datetime.utcnow()
+        timestamp = timestamp or datetime.now(UTC)
         
         # Generate activity ID
         activity_id = self._generate_activity_id(activity_type, metadata, timestamp)
@@ -164,7 +164,7 @@ class BehaviorDetector:
     
     def _prune_old_activities(self):
         """Remove activities outside the time window."""
-        cutoff = datetime.utcnow() - self.window_size
+        cutoff = datetime.now(UTC) - self.window_size
         old_activities = [
             aid for aid, node in self.activity_graph.items()
             if node.timestamp < cutoff
@@ -184,7 +184,7 @@ class BehaviorDetector:
     def _detect_repetitive_patterns(self, activity_id: str, node: ActivityNode):
         """Detect repetitive behavior patterns."""
         rules = self.detection_rules[BehaviorType.REPETITIVE]
-        recent = datetime.utcnow() - rules['time_window']
+        recent = datetime.now(UTC) - rules['time_window']
         
         # Count similar activities
         similar_activities = [
@@ -260,7 +260,7 @@ class BehaviorDetector:
     def _detect_escalating_patterns(self, activity_id: str, node: ActivityNode):
         """Detect escalating behavior patterns."""
         rules = self.detection_rules[BehaviorType.ESCALATING]
-        recent = datetime.utcnow() - rules['time_window']
+        recent = datetime.now(UTC) - rules['time_window']
         
         # Get recent activities
         activities = sorted(
@@ -346,7 +346,7 @@ class BehaviorDetector:
     def _detect_collaborative_patterns(self, activity_id: str, node: ActivityNode):
         """Detect collaborative behavior patterns."""
         rules = self.detection_rules[BehaviorType.COLLABORATIVE]
-        recent = datetime.utcnow() - rules['time_window']
+        recent = datetime.now(UTC) - rules['time_window']
         
         # Get recent activities
         activities = [
@@ -447,6 +447,6 @@ class BehaviorDetector:
             ),
             'latest_detection': max(
                 (p.last_seen for p in active_patterns),
-                default=datetime.utcnow()
+                default=datetime.now(UTC)
             ).isoformat()
         }

@@ -7,7 +7,7 @@ import secrets
 import hashlib
 import numpy as np
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import filelock
 import pathlib
 import shutil
@@ -352,7 +352,7 @@ class NexisSignalEngine:
         if db_path.exists() and db_path.stat().st_size > 100 * 1024 * 1024:  # 100MB
             self._rotate_memory_file()
             
-        cutoff = datetime.utcnow() - timedelta(days=30)
+        cutoff = datetime.now(UTC) - timedelta(days=30)
         self.memory = {
             k: v for k, v in self.memory.items()
             if datetime.fromisoformat(v['timestamp']) > cutoff
@@ -362,7 +362,7 @@ class NexisSignalEngine:
         """Archive current memory database and start a new one."""
         lock = filelock.FileLock(f"{self.memory_path}.lock")
         with lock:
-            timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
             archive_path = f"{self.memory_path}.{timestamp}"
             shutil.copy2(self.memory_path, archive_path)
             with sqlite3.connect(self.memory_path) as conn:
@@ -631,7 +631,7 @@ class NexisSignalEngine:
                 intent_vector = self._predict_intent_vector(signal_lower, tokens)
                 final_record = {
                     "hash": key,
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(UTC).isoformat(),
                     "input": input_signal,
                     "intent_signature": intent_vector,
                     "verdict": "blocked",
@@ -677,7 +677,7 @@ class NexisSignalEngine:
         
         final_record = {
             "hash": key,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "input": input_signal,
             "intent_signature": self._predict_intent_vector(signal_lower, tokens),
             "perspectives": perspectives_output,

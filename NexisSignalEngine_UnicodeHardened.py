@@ -2,6 +2,7 @@
 
 import re
 import unicodedata
+from datetime import datetime, UTC
 
 DANGEROUS_RANGES = [
     (0x200B, 0x200F),
@@ -52,7 +53,7 @@ from unicode_threat_analyzer import detect_unicode_threat
         if threat_report["threat_level"] == "high":
             final_record = {
                 "hash": self._hash(input_signal),
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "input": input_signal,
                 "threat_report": threat_report,
                 "verdict": "blocked",

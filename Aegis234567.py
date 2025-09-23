@@ -166,7 +166,7 @@ import os
 import hashlib
 import numpy as np
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import filelock
 import pathlib
 import shutil
@@ -333,7 +333,7 @@ class NexisSignalEngine:
 
     def _prune_and_rotate_memory(self):
         """Prune expired entries and rotate memory database if needed."""
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         with LockManager(f"{self.memory_path}.lock"):
             with sqlite3.connect(self.memory_path) as conn:
                 cursor = conn.cursor()
@@ -354,7 +354,7 @@ class NexisSignalEngine:
 
     def _rotate_memory_file(self):
         """Archive current memory database and start a new one."""
-        archive_path = f"{self.memory_path}.{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.bak"
+        archive_path = f"{self.memory_path}.{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}.bak"
         if os.path.exists(self.memory_path):
             shutil.move(self.memory_path, archive_path)
         self._init_sqlite()
@@ -509,7 +509,7 @@ class NexisSignalEngine:
         if intent_vector["pre_corruption_risk"] == "high":
             final_record = {
                 "hash": key,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "input": input_signal,
                 "intent_warning": intent_vector,
                 "verdict": "adaptive intervention",
@@ -534,7 +534,7 @@ class NexisSignalEngine:
 
         final_record = {
             "hash": key,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "input": input_signal,
             "intent_signature": intent_vector,
             "perspectives": perspectives_output,

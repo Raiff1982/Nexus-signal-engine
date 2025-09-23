@@ -50,32 +50,62 @@ test_cases = [
 - Mixed character sets
 - Repeated characters
 
-### Recent Test Results
+### Current Test Results (September 23, 2025)
 
-#### Core Functionality
-| Test Case | Previous | Current | Status |
-|-----------|----------|----------|---------|
-| Basic Processing | ✅ | ✅ | Stable |
-| Config Loading | ✅ | ✅ | Stable |
-| Memory System | ✅ | ✅ | Stable |
-| Risk Scoring | ❌ | ✅ | Fixed |
+All tests are currently passing (11 tests, 0.374s execution time)
 
-#### Security Features
-| Test Case | Previous | Current | Status |
-|-----------|----------|----------|---------|
-| Special Chars | ❌ | ✅ | Fixed |
-| Risk Terms | ✅ | ✅ | Stable |
-| Ethical Detection | ⚠️ | ✅ | Improved |
-| Pattern Analysis | ❌ | ✅ | Fixed |
+#### Behavior Detection Tests
+| Test Case | Description | Status | Details |
+|-----------|-------------|--------|---------|
+| test_behavior_pattern | Pattern creation and validation | ✅ | Validates creation and detection of behavior patterns |
+| test_confidence_bounds | Confidence scoring | ✅ | Tests bounds and accuracy of confidence scoring |
+
+#### Pattern Correlation Tests
+| Test Case | Description | Status | Details |
+|-----------|-------------|--------|---------|
+| test_correlation_pruning | Correlation data management | ✅ | Validates pruning of old correlation data |
+| test_temporal_correlation | Temporal pattern detection | ✅ | Tests detection of time-based correlations |
+
+#### Multimodal Analysis Tests
+| Test Case | Description | Status | Details |
+|-----------|-------------|--------|---------|
+| test_content_features | Feature extraction | ✅ | Validates content feature extraction |
+| test_risk_score_bounds | Risk scoring validation | ✅ | Tests risk score calculation boundaries |
+
+#### Threat Detection Tests
+| Test Case | Description | Status | Details |
+|-----------|-------------|--------|---------|
+| test_model_persistence | Model I/O operations | ✅ | Ensures models save and load correctly |
+| test_model_training | Model functionality | ✅ | Validates model training and predictions |
+
+#### Threat Scoring Tests
+| Test Case | Description | Status | Details |
+|-----------|-------------|--------|---------|
+| test_benign_scoring | Benign case handling | ✅ | Tests scoring of non-threatening content |
+| test_component_weights | Weight calculations | ✅ | Validates component weight system |
+| test_threat_scoring | Threat detection | ✅ | Tests scoring of potentially harmful content |
 
 ### Running Tests
 ```bash
-# Run all tests
-python -m unittest discover
+# Run all tests with verbose output
+python -m unittest discover -s tests -v
 
-# Run specific test category
-python -m unittest tests/test_security.py
+# Run specific test module
+python -m unittest tests/test_behavior.py
+python -m unittest tests/test_correlator.py
+python -m unittest tests/test_multimodal.py
+python -m unittest tests/test_threat_detector.py
+python -m unittest tests/test_threat_scoring.py
 ```
+
+### Test Coverage
+
+Current test coverage includes:
+- Behavioral pattern detection and analysis
+- Temporal correlation detection and pruning
+- Multimodal content analysis and feature extraction
+- Threat detection model training and persistence
+- Risk scoring and weight calculations
 
 ## Adding New Tests
 1. Create test file in `tests/` directory

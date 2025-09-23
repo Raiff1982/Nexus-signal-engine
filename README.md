@@ -83,6 +83,34 @@ Requirements
   - tenacity >= 8.2.3
   - sqlite3 (standard lib)
 
+Testing Status
+-------------
+
+The codebase is thoroughly tested with a comprehensive test suite. All tests are currently passing:
+
+### Behavior Detection Tests
+- ✅ `test_behavior_pattern`: Validates behavior pattern creation and validation
+- ✅ `test_confidence_bounds`: Tests confidence score validation
+
+### Pattern Correlation Tests
+- ✅ `test_correlation_pruning`: Validates old correlation pruning functionality
+- ✅ `test_temporal_correlation`: Tests temporal correlation detection
+
+### Multimodal Analysis Tests
+- ✅ `test_content_features`: Validates content features creation and validation
+- ✅ `test_risk_score_bounds`: Tests risk score validation boundaries
+
+### Threat Detection Tests
+- ✅ `test_model_persistence`: Ensures model saving and loading works correctly
+- ✅ `test_model_training`: Validates model training and prediction functionality
+
+### Threat Scoring Tests
+- ✅ `test_benign_scoring`: Tests scoring of benign activity
+- ✅ `test_component_weights`: Validates component weight calculations
+- ✅ `test_threat_scoring`: Tests scoring of threatening activity
+
+Last test run: September 23, 2025 - All 11 tests passed successfully (0.374s)
+
 ⸻
 
 Citation

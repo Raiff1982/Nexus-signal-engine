@@ -1,7 +1,7 @@
 """Compliance reporting module for Nexus Signal Engine."""
 
 from typing import Dict, List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import json
 import csv
 from dataclasses import dataclass, asdict
@@ -66,7 +66,7 @@ class ComplianceManager:
     ):
         """Log a compliance event."""
         event = ComplianceEvent(
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(UTC),
             standard=standard,
             level=level,
             description=description,
@@ -87,7 +87,7 @@ class ComplianceManager:
     ):
         """Mark a compliance event as resolved."""
         event.resolution = resolution
-        event.resolved_at = datetime.utcnow()
+        event.resolved_at = datetime.now(UTC)
         
         logger.info(
             f"Resolved compliance event: {event.description} - {resolution}"
@@ -123,7 +123,7 @@ class ComplianceManager:
             ]
         
         # Generate report filename
-        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
         standard_name = standard.value if standard else "all"
         filename = f"compliance_report_{standard_name}_{timestamp}"
         
@@ -170,7 +170,7 @@ class ComplianceManager:
         standard: Optional[ComplianceStandard] = None
     ) -> Dict:
         """Get current compliance status summary."""
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         thirty_days_ago = now - timedelta(days=30)
         
         events = [

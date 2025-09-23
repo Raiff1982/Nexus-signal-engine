@@ -7,7 +7,7 @@ from enum import Enum
 import re
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, UTC
 import hashlib
 
 # Required for advanced text processing
@@ -110,7 +110,7 @@ class MultimodalAnalyzer:
             features=features,
             risk_score=risk_score,
             confidence=confidence,
-            detection_time=datetime.utcnow()
+            detection_time=datetime.now(UTC)
         )
     
     def _detect_content_type(self, content: str) -> ContentType:

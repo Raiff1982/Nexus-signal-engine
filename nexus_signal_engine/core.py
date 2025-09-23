@@ -5,7 +5,7 @@ Core NexisSignalEngine implementation with multi-agent analysis and language awa
 import time
 import logging
 import numpy as np
-from datetime import datetime
+from datetime import datetime, UTC
 from collections import Counter
 from typing import Dict, List, Tuple
 from nltk.tokenize import word_tokenize 
@@ -94,7 +94,7 @@ class NexisSignalEngine:
         
         # Prepare final record
         final_record = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "input": input_signal,
             "language_analysis": lang_analysis,
             "intent_signature": intent_vector,

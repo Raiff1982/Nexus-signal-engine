@@ -6,7 +6,7 @@ from typing import Dict, Any, List, Optional
 import json
 import logging
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, UTC
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ class WebhookManager:
         if not self.session:
             await self.initialize()
         
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = datetime.now(UTC).isoformat()
         
         for webhook_id, config in self.webhooks.items():
             if not config.events or event in config.events:

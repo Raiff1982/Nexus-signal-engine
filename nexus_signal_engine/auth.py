@@ -1,6 +1,6 @@
 """Authentication and authorization module for Nexus Signal Engine."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from typing import Optional, Dict, List, Union
 from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status
@@ -114,7 +114,7 @@ class AuthManager:
                         metadata={
                             "provider": provider,
                             "provider_user_id": user_data.get("sub", ""),
-                            "last_login": datetime.utcnow().isoformat()
+                            "last_login": datetime.now(UTC).isoformat()
                         }
                     )
                     
@@ -128,7 +128,7 @@ class AuthManager:
     def create_access_token(self, user_profile: UserProfile) -> Token:
         """Create JWT access token."""
         expires_delta = timedelta(minutes=self.config.token_expire_minutes)
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(UTC) + expires_delta
         
         to_encode = {
             "sub": user_profile.email,
