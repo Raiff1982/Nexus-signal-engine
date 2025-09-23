@@ -2,7 +2,7 @@
 
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, UTC
 import numpy as np
 from enum import Enum
 
@@ -261,5 +261,5 @@ class ThreatScorer:
             confidence=confidence,
             components=components,
             evidence=evidence,
-            timestamp=datetime.utcnow()
+            timestamp=datetime.now(UTC)
         )

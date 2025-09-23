@@ -48,5 +48,5 @@ class TestMultimodalAnalysis(unittest.TestCase):
                 risk_score=-0.5,  # Should be >= 0.0
                 features={},
                 confidence=0.85,
-                detection_time=datetime.utcnow()
+                detection_time=datetime.now(UTC)
             )

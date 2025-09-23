@@ -1,7 +1,7 @@
 """Tests for threat scoring system."""
 
 import unittest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from nexus_signal_engine.detection.threat_scoring import (
     ThreatScorer,
     ScoreCategory
@@ -41,7 +41,7 @@ class TestThreatScoring(unittest.TestCase):
                 'sentiment': 0.1
             },
             confidence=0.85,
-            detection_time=datetime.utcnow()
+            detection_time=datetime.now(UTC)
         )
         
         self.threat_content = ContentFeatures(
@@ -54,11 +54,11 @@ class TestThreatScoring(unittest.TestCase):
                 'sentiment': -0.7
             },
             confidence=0.9,
-            detection_time=datetime.utcnow()
+            detection_time=datetime.now(UTC)
         )
         
         # Sample behavior
-        current_time = datetime.utcnow()
+        current_time = datetime.now(UTC)
         self.benign_behavior = BehaviorPattern(
             pattern_type=BehaviorType.REPETITIVE,
             threat_level=ThreatLevel.LOW,
@@ -70,7 +70,7 @@ class TestThreatScoring(unittest.TestCase):
             metadata={}
         )
         
-        current_time = datetime.utcnow()
+        current_time = datetime.now(UTC)
         self.threat_behavior = BehaviorPattern(
             pattern_type=BehaviorType.ESCALATING,
             threat_level=ThreatLevel.HIGH,
@@ -90,7 +90,7 @@ class TestThreatScoring(unittest.TestCase):
                 behavior_patterns=[self.threat_behavior],
                 correlation_score=0.85,
                 confidence=0.9,
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(UTC),
                 metadata={}
             )
         ]
@@ -102,7 +102,7 @@ class TestThreatScoring(unittest.TestCase):
             risk_score=0.85,
             features_importance={'risk_score': 0.8},
             contributing_patterns=self.correlations,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(UTC),
             metadata={}
         )
     

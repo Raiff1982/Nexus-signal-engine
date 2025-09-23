@@ -3,7 +3,7 @@
 import unittest
 import tempfile
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import numpy as np
 from nexus_signal_engine.detection.threat_detector import (
     ThreatDetector,
@@ -31,7 +31,7 @@ class TestThreatDetection(unittest.TestCase):
         
         # Generate benign samples
         for _ in range(10):
-            current_time = datetime.utcnow()
+            current_time = datetime.now(UTC)
             self.training_data.append({
                 'inputs': {
                     'content': ContentFeatures(
@@ -62,7 +62,7 @@ class TestThreatDetection(unittest.TestCase):
         
         # Generate threatening samples
         for _ in range(10):
-            current_time = datetime.utcnow()
+            current_time = datetime.now(UTC)
             self.training_data.append({
                 'inputs': {
                     'content': ContentFeatures(
@@ -97,7 +97,7 @@ class TestThreatDetection(unittest.TestCase):
         self.detector.train(self.training_data)
         
         # Test benign prediction
-        current_time = datetime.utcnow()
+        current_time = datetime.now(UTC)
         benign_content = ContentFeatures(
             content_type=ContentType.TEXT,
             raw_content="Test benign content",
@@ -133,7 +133,7 @@ class TestThreatDetection(unittest.TestCase):
         )
         
         # Test threatening prediction
-        current_time = datetime.utcnow()
+        current_time = datetime.now(UTC)
         threat_content = ContentFeatures(
             content_type=ContentType.TEXT,
             raw_content="Test threatening content",
@@ -186,7 +186,7 @@ class TestThreatDetection(unittest.TestCase):
         os.unlink(model_path)
         
         # Test prediction consistency
-        current_time = datetime.utcnow()
+        current_time = datetime.now(UTC)
         content = ContentFeatures(
             content_type=ContentType.TEXT,
             raw_content="Test content for persistence check",

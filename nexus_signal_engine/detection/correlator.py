@@ -2,7 +2,7 @@
 
 from typing import Dict, List, Optional, Set, Tuple, Any
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import numpy as np
 from collections import defaultdict
 import logging
@@ -59,7 +59,7 @@ class PatternCorrelator:
     
     def _prune_old_data(self):
         """Remove old data outside the temporal window."""
-        cutoff = datetime.utcnow() - self.temporal_window
+        cutoff = datetime.now(UTC) - self.temporal_window
         
         self.content_buffer = [
             c for c in self.content_buffer
@@ -136,7 +136,7 @@ class PatternCorrelator:
                         behavior_patterns=related_patterns,
                         correlation_score=correlation_score,
                         confidence=np.mean([p.confidence for p in related_patterns]),
-                        timestamp=datetime.utcnow(),
+                        timestamp=datetime.now(UTC),
                         metadata={
                             'time_differences': [
                                 abs((content.detection_time - p.last_seen).total_seconds())
@@ -169,7 +169,7 @@ class PatternCorrelator:
                     behavior_patterns=list(patterns),
                     correlation_score=np.mean(similarities),
                     confidence=np.mean([p.confidence for p in patterns]),
-                    timestamp=datetime.utcnow(),
+                    timestamp=datetime.now(UTC),
                     metadata={
                         'context_similarities': similarities
                     }
@@ -213,7 +213,7 @@ class PatternCorrelator:
                         behavior_patterns=related_patterns,
                         correlation_score=min(1.0, abs(risk_trend) * 2),
                         confidence=np.mean([p.confidence for p in related_patterns]),
-                        timestamp=datetime.utcnow(),
+                        timestamp=datetime.now(UTC),
                         metadata={
                             'risk_trend': risk_trend,
                             'sample_size': len(contents)
@@ -255,7 +255,7 @@ class PatternCorrelator:
                     confidence=np.mean([
                         c.confidence for c in content_correlations
                     ]),
-                    timestamp=datetime.utcnow(),
+                    timestamp=datetime.now(UTC),
                     metadata={
                         'correlation_types': [
                             c.correlation_type for c in content_correlations
@@ -366,6 +366,6 @@ class PatternCorrelator:
             ]) if correlations else 0.0,
             'latest_correlation': max(
                 (c.timestamp for c in correlations),
-                default=datetime.utcnow()
+                default=datetime.now(UTC)
             ).isoformat()
         }

@@ -2,7 +2,7 @@
 
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, UTC
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
@@ -248,7 +248,7 @@ class ThreatDetector:
             risk_score=risk_score,
             features_importance=importance,
             contributing_patterns=(correlations or []),
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(UTC),
             metadata={
                 'prediction_probabilities': dict(zip(
                     [c.value for c in ThreatCategory],
