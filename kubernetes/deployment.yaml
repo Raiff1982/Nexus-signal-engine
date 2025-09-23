@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexus-signal-engine
+  labels:
+    app: nexus-signal-engine
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nexus-signal-engine
+  template:
+    metadata:
+      labels:
+        app: nexus-signal-engine
+    spec:
+      containers:
+      - name: nexus-signal-engine
+        image: nexus-signal-engine:latest
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: backups
+          mountPath: /app/backups
+        - name: logs
+          mountPath: /app/logs
+        env:
+        - name: MAX_INPUT_LENGTH
+          value: "10000"
+        - name: MAX_BATCH_SIZE
+          value: "1000"
+        - name: MAX_QUERY_LENGTH
+          value: "500"
+        - name: BACKUP_COUNT
+          value: "5"
+        - name: BACKUP_INTERVAL
+          value: "86400"
+        - name: LOG_LEVEL
+          value: "INFO"
+        livenessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - "import nexus_signal_engine"
+          initialDelaySeconds: 30
+          periodSeconds: 30
+      volumes:
+      - name: backups
+        persistentVolumeClaim:
+          claimName: nexus-backups-pvc
+      - name: logs
+        persistentVolumeClaim:
+          claimName: nexus-logs-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nexus-signal-engine
+spec:
+  selector:
+    app: nexus-signal-engine
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8000
+  type: ClusterIP

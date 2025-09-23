@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  nexus-signal-engine:
+    build: .
+    image: nexus-signal-engine:latest
+    container_name: nexus-signal-engine
+    volumes:
+      - ./backups:/app/backups
+      - ./logs:/app/logs
+    environment:
+      - MAX_INPUT_LENGTH=10000
+      - MAX_BATCH_SIZE=1000
+      - MAX_QUERY_LENGTH=500
+      - BACKUP_COUNT=5
+      - BACKUP_INTERVAL=86400
+      - LOG_LEVEL=INFO
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import nexus_signal_engine"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Monitoring service (Prometheus)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+
+  # Visualization (Grafana)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    restart: unless-stopped
+
+volumes:
+  grafana-storage: {}
