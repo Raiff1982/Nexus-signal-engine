@@ -8,7 +8,7 @@ version = "1.0.0"
 description = "Adversarially robust, forensic-grade, agent-driven AI signal analysis and memory engine."
 readme = "README.md"
 authors = [
-  { name = "Jonathan Harrison", email = "harrison82_95@hotmail.com", orcid = "0009-0003-7005-8187" }
+  { name = "Jonathan Harrison", email = "harrison82_95@hotmail.com" }
 ]
 license = { file = "LICENSE" }
 keywords = [

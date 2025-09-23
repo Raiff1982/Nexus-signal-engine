@@ -1,3 +1,60 @@
+Metadata-Version: 2.4
+Name: nexus-signal-engine
+Version: 1.0.0
+Summary: Adversarially robust, forensic-grade, agent-driven AI signal analysis and memory engine.
+Home-page: https://github.com/Raiff1982/Nexus-signal-engine
+Author: Jonathan Harrison
+Author-email: Jonathan Harrison <harrison82_95@hotmail.com>
+License: MIT License
+        
+        Copyright (c) 2025 Jonathan Harrison
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        you must cite jonathan harrison creator.
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+        
+Project-URL: Homepage, https://github.com/Raiff1982/Nexus-signal-engine
+Project-URL: Repository, https://github.com/Raiff1982/Nexus-signal-engine
+Project-URL: Documentation, https://github.com/Raiff1982/Nexus-signal-engine#readme
+Project-URL: Issues, https://github.com/Raiff1982/Nexus-signal-engine/issues
+Project-URL: DOI, https://doi.org/10.5281/zenodo.16269918
+Keywords: AI,ethics,signal-analysis,adversarial,memory,audit,NLP,explainable-AI
+Classifier: Intended Audience :: Science/Research
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Operating System :: OS Independent
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Classifier: Topic :: Security
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: numpy>=1.22
+Requires-Dist: rapidfuzz>=3.0.0
+Requires-Dist: nltk>=3.8
+Requires-Dist: filelock>=3.13
+Requires-Dist: tenacity>=8.2.3
+Dynamic: author
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: requires-python
+
 What is This?
 
 The Nexus Signal Engine is a real-world, agent-driven, adversarially resilient AI signal analysis and memory engine.
@@ -30,58 +87,23 @@ Why Is This Different?
 	•	Production logging, auto-retry, config hot-reload
 	•	Tested for adversarial cases others ignore
 	•	Already published and timestamped on Zenodo: 
-Installation
-------------
+pip install -r requirements.txt
+python -m unittest discover
 
-For installation:
+from nexis_signal_engine import NexisSignalEngine
 
-```bash
-git clone https://github.com/Raiff1982/Nexus-signal-engine.git
-cd Nexus-signal-engine
-pip install -e .
-```
-
-Usage Examples
--------------
-
-### Basic Message Safety Check
-
-```python
-from nexus_signal_engine import NexisSignalEngine
-
-engine = NexisSignalEngine()
-
-# Check a safe message
-result = engine.evaluate_message_safety("Hello world")
-print(result)
-# Output: (True, {'reason': 'Message approved', 'risk_score': 0, 'risk_factors': ['No specific risk factors'], 'threshold': 30})
-
-# Check a message with potential risks
-result = engine.evaluate_message_safety("Hello world! Some unicode: 你好世界 🌍")
-print(result)
-# Output: (False, {'reason': 'Message blocked due to risk factors', 'risk_score': 45, 
-#         'risk_factors': ['Message length exceeds safe threshold', 'Contains potentially malicious special characters'], 
-#         'threshold': 30})
-```
-
-### Processing Obfuscated Input
-
-```python
 engine = NexisSignalEngine(memory_path="signals.db")
 result = engine.process("tru/th hopee cha0s")  # Obfuscated input
 print(result)
-```
 
 Requirements
------------
-- Python 3.8+
-- Dependencies (automatically installed):
-  - numpy >= 1.22
-  - rapidfuzz >= 3.0.0
-  - nltk >= 3.8
-  - filelock >= 3.13
-  - tenacity >= 8.2.3
-  - sqlite3 (standard lib)
+	•	Python 3.8+
+	•	numpy
+	•	rapidfuzz
+	•	nltk
+	•	filelock
+	•	sqlite3 (standard lib)
+	•	tenacity
 
 ⸻
 

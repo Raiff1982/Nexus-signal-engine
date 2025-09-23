@@ -1,0 +1,5 @@
+numpy>=1.22
+rapidfuzz>=3.0.0
+nltk>=3.8
+filelock>=3.13
+tenacity>=8.2.3
