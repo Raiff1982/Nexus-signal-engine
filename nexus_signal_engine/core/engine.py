@@ -19,11 +19,72 @@ from nltk.stem import WordNetLemmatizer
 from tenacity import retry, stop_after_attempt, wait_exponential
 import logging
 import time
+from typing import Any, Dict, Optional, Union
+import threading
+from time import time
 
 from ..hoax import HoaxFilter
 
 # Configure logging
 logger = logging.getLogger(__name__)
+
+class SecurityError(Exception):
+    """Raised when a security constraint is violated."""
+    pass
+
+class SecurityLogger:
+    """Enhanced security logger with detailed event tracking."""
+    
+    def __init__(self, logger_name: str):
+        self.logger = logging.getLogger(logger_name)
+        self._setup_logger()
+        
+    def _setup_logger(self):
+        """Configure the security logger with proper formatting and handlers."""
+        # Create formatters
+        detailed_formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s - '
+            '[security_event: %(security_event)s] '
+            '[ip: %(ip)s] [user: %(user)s] [session: %(session)s]'
+        )
+        
+        # File handler for all security events
+        file_handler = logging.FileHandler('security_events.log')
+        file_handler.setFormatter(detailed_formatter)
+        file_handler.setLevel(logging.INFO)
+        
+        # Special handler for high-severity events
+        alert_handler = logging.FileHandler('security_alerts.log')
+        alert_handler.setFormatter(detailed_formatter)
+        alert_handler.setLevel(logging.WARNING)
+        
+        self.logger.addHandler(file_handler)
+        self.logger.addHandler(alert_handler)
+        self.logger.setLevel(logging.INFO)
+    
+    def log_security_event(self, message: str, level: str = "info", **kwargs):
+        """
+        Log a security event with detailed context.
+        
+        Args:
+            message: The log message
+            level: Logging level ("info", "warning", "error", "critical")
+            **kwargs: Additional context parameters
+        """
+        # Default context values
+        context = {
+            "security_event": kwargs.get("security_event", "general"),
+            "ip": kwargs.get("ip", "unknown"),
+            "user": kwargs.get("user", "system"),
+            "session": kwargs.get("session", "unknown")
+        }
+        
+        # Add any additional context
+        context.update(kwargs)
+        
+        # Log with appropriate level
+        log_method = getattr(self.logger, level.lower())
+        log_method(message, extra=context)
 
 # Download required NLTK data
 nltk.download('punkt')
@@ -39,16 +100,157 @@ class NexisSignalEngine:
         self.perspectives = ["Colleen", "Luke", "Kellyanne"]
         self.entropy_threshold = 0.7
         
+        # Rate limiting setup
+        self._rate_limit_lock = threading.Lock()
+        self._tokens = 100  # Initial token count
+        self._token_rate = 10  # Tokens per second
+        self._last_update = time()
+        self._max_tokens = 100
+        
         # Initialize configuration for lenient content handling
         self.config = {
             "risk_terms": ["exploit", "hack", "malware", "virus"],
             "benign_greetings": ["hi", "hello", "hey", "greetings"],
             "ethical_terms": ["hope", "truth", "empathy", "good"],
             "entropy_threshold": 0.7,
-            "fuzzy_threshold": 85
+            "fuzzy_threshold": 85,
+            # Security limits
+            "max_input_length": 10000,  # Maximum input text length
+            "max_batch_size": 1000,     # Maximum items in batch operations
+            "max_query_length": 500,    # Maximum query length
+            # Backup configuration
+            "backup_count": 5,          # Number of backup files to keep
+            "backup_interval": 86400,   # Backup interval in seconds (24 hours)
+            "backup_dir": "backups"     # Directory to store backups
         }
+
+        # Configure logging
+        self._setup_logging()
         
         self.init_sqlite()
+
+    def _setup_logging(self):
+        """Set up detailed security logging."""
+        self.security_logger = SecurityLogger(__name__)
+
+    def _check_rate_limit(self, tokens_needed: int = 1) -> bool:
+        """
+        Check if the operation is within rate limits using token bucket algorithm.
+        
+        Args:
+            tokens_needed: Number of tokens needed for the operation
+            
+        Returns:
+            bool: True if operation is allowed, False if rate limit exceeded
+            
+        Thread-safe implementation of the token bucket algorithm.
+        """
+        with self._rate_limit_lock:
+            now = time()
+            time_passed = now - self._last_update
+            self._tokens = min(
+                self._max_tokens,
+                self._tokens + time_passed * self._token_rate
+            )
+            self._last_update = now
+            
+            if self._tokens >= tokens_needed:
+                self._tokens -= tokens_needed
+                return True
+            
+            logger.warning(
+                f"Rate limit exceeded. Tokens needed: {tokens_needed}, Available: {self._tokens:.2f}",
+                extra={"security_event": "rate_limit_exceeded"}
+            )
+            return False
+
+    def _validate_input(self, text: str, input_type: str = "message") -> None:
+        """
+        Validate input against security constraints.
+        
+        Args:
+            text: The input text to validate
+            input_type: Type of input ("message", "query", or "batch")
+            
+        Raises:
+            SecurityError: If input violates security constraints
+        """
+        if not text:
+            return
+
+        length = len(text)
+        max_length = {
+            "message": self.config["max_input_length"],
+            "query": self.config["max_query_length"],
+            "batch": self.config["max_batch_size"]
+        }.get(input_type)
+
+        if max_length and length > max_length:
+            error_msg = f"Input exceeds maximum {input_type} length: {length} > {max_length}"
+            logger.warning(error_msg, extra={"security_event": "input_length_exceeded"})
+            raise SecurityError(error_msg)
+
+    def _rotate_backups(self) -> None:
+        """
+        Rotate database backups, keeping only the configured number of most recent backups.
+        """
+        backup_dir = pathlib.Path(self.config["backup_dir"])
+        backup_dir.mkdir(exist_ok=True)
+        
+        # List all backup files
+        backup_files = sorted(
+            backup_dir.glob("memory_backup_*.db"),
+            key=lambda x: x.stat().st_mtime,
+            reverse=True
+        )
+        
+        # Remove old backups
+        max_backups = self.config["backup_count"]
+        for old_backup in backup_files[max_backups:]:
+            try:
+                old_backup.unlink()
+                logger.info(
+                    f"Removed old backup: {old_backup}",
+                    extra={"security_event": "backup_rotated"}
+                )
+            except Exception as e:
+                logger.error(
+                    f"Failed to remove old backup {old_backup}: {e}",
+                    extra={"security_event": "backup_rotation_failed"}
+                )
+
+    def _backup_database(self) -> None:
+        """
+        Create a new backup of the database if the backup interval has elapsed.
+        """
+        backup_dir = pathlib.Path(self.config["backup_dir"])
+        backup_dir.mkdir(exist_ok=True)
+        
+        # Create new backup filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_path = backup_dir / f"memory_backup_{timestamp}.db"
+        
+        try:
+            # Create backup using SQLite's backup API
+            with sqlite3.connect(self.memory_path) as src, \
+                 sqlite3.connect(str(backup_path)) as dst:
+                src.backup(dst)
+            
+            logger.info(
+                f"Created database backup: {backup_path}",
+                extra={"security_event": "backup_created"}
+            )
+            
+            # Rotate old backups
+            self._rotate_backups()
+            
+        except Exception as e:
+            logger.error(
+                f"Failed to create database backup: {e}",
+                extra={"security_event": "backup_failed"}
+            )
+            if backup_path.exists():
+                backup_path.unlink()
 
     def init_sqlite(self):
         """Initialize SQLite database with memory and FTS tables."""
@@ -68,9 +270,34 @@ class NexisSignalEngine:
                     CREATE VIRTUAL TABLE IF NOT EXISTS memory_fts
                     USING FTS5(input, intent_signature, reasoning, verdict)
                 """)
+                
+                # Create tracking table for backups
+                conn.execute("""
+                    CREATE TABLE IF NOT EXISTS backup_meta (
+                        last_backup TIMESTAMP,
+                        backup_count INTEGER
+                    )
+                """)
                 conn.commit()
+                
+                # Initialize backup tracking if needed
+                cursor = conn.cursor()
+                cursor.execute("SELECT COUNT(*) FROM backup_meta")
+                if cursor.fetchone()[0] == 0:
+                    cursor.execute(
+                        "INSERT INTO backup_meta VALUES (?, ?)",
+                        (datetime.now(), 0)
+                    )
+                    conn.commit()
+                
+            # Create initial backup
+            self._backup_database()
+            
         except sqlite3.Error as e:
-            logger.error(f"Error initializing SQLite database: {e}")
+            logger.error(
+                f"Error initializing SQLite database: {e}",
+                extra={"security_event": "database_init_failed"}
+            )
             raise
 
     def _save_memory(self):
