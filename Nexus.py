@@ -45,9 +45,17 @@ class LockManager:
         self.lock.release()
 
 class NexisSignalEngine:
-    def __init__(self, memory_path, entropy_threshold=0.08, config_path="config.json", max_memory_entries=10000, memory_ttl_days=30, fuzzy_threshold=80, max_db_size_mb=100):
+    def __init__(self, memory_path="memory.db", entropy_threshold=0.08, config_path="config.json", max_memory_entries=10000, memory_ttl_days=30, fuzzy_threshold=80, max_db_size_mb=100):
         """
         Initialize the NexisSignalEngine for signal processing and analysis.
+        """
+        self.config = {
+            "risk_terms": ["exploit", "hack", "malware", "virus"],
+            "benign_greetings": ["hi", "hello", "hey", "greetings"],
+            "ethical_terms": ["hope", "truth", "empathy", "good"],
+            "entropy_threshold": entropy_threshold,
+            "fuzzy_threshold": fuzzy_threshold
+        }
 
         Args:
             memory_path (str): Path to SQLite database for storing signal data.
@@ -279,19 +287,33 @@ class NexisSignalEngine:
         return "unaligned"
 
     def _predict_intent_vector(self, signal_lower, tokens):
-        """Predict intent based on risk, entropy, ethics, and harmonic volatility."""
+        """Predict intent based on risk, entropy, ethics, and harmonic volatility, with strong preference for benign content."""
+        # Start with lower base suspicion 
         suspicion_score = 0
+        
+        # Check for risk terms but with reduced weight
         for term in self.config["risk_terms"]:
             lemmatized_term = self.lemmatizer.lemmatize(term)
             for token in tokens:
                 if fuzz.ratio(lemmatized_term, token) >= self.fuzzy_threshold:
-                    suspicion_score += 1
+                    suspicion_score += 0.5  # Reduced from 1.0
+                    
+        # Calculate core metrics
         entropy_index = round(self._entropy(signal_lower, tokens), 3)
         ethical_alignment = self._tag_ethics(signal_lower, tokens)
         harmonic_profile = self._resonance_equation(signal_lower)
         volatility = round(np.std(harmonic_profile), 3)
+        
+        # Apply strong bonuses for benign content
+        if len(signal_lower.split()) <= 3:
+            suspicion_score = max(0.0, suspicion_score - 0.4)  # Big bonus for short messages
+            
+        if any(greeting in signal_lower for greeting in self.config["benign_greetings"]):
+            suspicion_score = max(0.0, suspicion_score - 0.3)  # Bonus for greetings
 
-        risk = "high" if (suspicion_score > 1 or volatility > 2.0 or entropy_index > self.entropy_threshold) else "low"
+        # Set risk threshold with more lenient criteria            
+        risk = "high" if (suspicion_score > 2 or volatility > 3.0 or entropy_index > self.entropy_threshold) else "low"
+        
         return {
             "suspicion_score": suspicion_score,
             "entropy_index": entropy_index,

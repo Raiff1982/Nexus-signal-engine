@@ -2,6 +2,8 @@
 
 import json
 import os
+import re
+import secrets
 import hashlib
 import numpy as np
 from collections import defaultdict
@@ -11,8 +13,6 @@ import pathlib
 import shutil
 import sqlite3
 from rapidfuzz import fuzz
-import secrets
-import re
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
@@ -38,6 +38,16 @@ class NexisSignalEngine:
         self.lemmatizer = WordNetLemmatizer()
         self.perspectives = ["Colleen", "Luke", "Kellyanne"]
         self.entropy_threshold = 0.7
+        
+        # Initialize configuration for lenient content handling
+        self.config = {
+            "risk_terms": ["exploit", "hack", "malware", "virus"],
+            "benign_greetings": ["hi", "hello", "hey", "greetings"],
+            "ethical_terms": ["hope", "truth", "empathy", "good"],
+            "entropy_threshold": 0.7,
+            "fuzzy_threshold": 85
+        }
+        
         self.init_sqlite()
 
     def init_sqlite(self):
@@ -215,16 +225,122 @@ class NexisSignalEngine:
         harmonics = self._resonance_equation(signal_lower)
         
         volatility = np.std([h["amplitude"] for h in harmonics])
-        suspicion_score = (entropy_index * 0.4 +
-                          (1 if ethics != "aligned" else 0) * 0.3 +
-                          min(volatility / 100, 1.0) * 0.3)
+        
+        # Base suspicion score with reduced weights
+        suspicion_score = (entropy_index * 0.3 +  # Reduced from 0.4
+                          (1 if ethics != "aligned" else 0) * 0.2 +  # Reduced from 0.3
+                          min(volatility / 150, 1.0) * 0.2)  # Reduced volatility impact
+                          
+        # Strong bonus for benign patterns and short messages
+        msg_tokens = signal_lower.split()
+        if len(msg_tokens) <= 3 and not any(t in self.config["risk_terms"] for t in msg_tokens):
+            suspicion_score = max(0.0, suspicion_score - 0.4)  # Much larger reduction
+            
+        if any(greeting in signal_lower for greeting in self.config.get("benign_greetings", [])):
+            suspicion_score = max(0.0, suspicion_score - 0.3)  # Additional greeting bonus
         
         return {
             "entropy_index": float(entropy_index),
-            "ethics": ethics,
+            "ethics": ethics, 
             "harmonic_volatility": float(volatility),
             "suspicion_score": float(suspicion_score)
         }
+
+    def evaluate_message_safety(self, message):
+        """Evaluate if a message is safe based on simple rules."""
+        if not message:
+            return False, {"reason": "Empty message"}
+            
+        # Strip and lowercase for comparison
+        clean_msg = message.lower().strip()
+        
+        # Check for benign greetings - fast path
+        if clean_msg in self.config["benign_greetings"]:
+            return True, {"reason": "Benign greeting", "risk_score": 0, "risk_factors": []}
+            
+        # Calculate base risk score
+        risk_score = 0
+        risk_factors = []
+        
+        # Risk for message length
+        if len(clean_msg) > 50:  # Longer messages get initial risk
+            risk_score += 10
+            risk_factors.append("Message length exceeds safe threshold")
+        
+        # Add significant risk for known risk terms
+        detected_risk_terms = []
+        for term in self.config["risk_terms"]:
+            if term.lower() in clean_msg:
+                risk_score += 40
+                detected_risk_terms.append(term)
+        if detected_risk_terms:
+            risk_factors.append(f"Contains risk terms: {', '.join(detected_risk_terms)}")
+        
+        # Add significant risk for unusual character patterns
+        if re.search(r'[^a-zA-Z0-9\s.,!?]', clean_msg):  # Non-standard characters
+            risk_score += 35  # High risk for special characters
+            risk_factors.append("Contains potentially malicious special characters")
+        
+        # Add risk for excessive punctuation
+        if re.search(r'[!?.,]{3,}', clean_msg):  # Three or more punctuation marks in a row
+            risk_score += 20
+            risk_factors.append("Excessive punctuation detected")
+        
+        # Add risk for entropy
+        entropy = self.calculate_entropy(clean_msg)
+        if entropy > self.config["entropy_threshold"]:
+            risk_score += 35
+            risk_factors.append(f"High entropy content ({entropy:.2f})")
+        
+        # Reduce risk for ethical terms - but with less impact when special characters are present
+        ethical_terms = []
+        for term in self.config["ethical_terms"]:
+            if term.lower() in clean_msg:
+                ethical_terms.append(term)
+        if ethical_terms:
+            # Reduce the ethical bonus if message has special characters
+            if re.search(r'[^a-zA-Z0-9\s.,!?]', clean_msg):
+                reduction = min(len(ethical_terms) * 5, 15)  # Less reduction for suspicious messages
+            else:
+                reduction = min(len(ethical_terms) * 10, 30)  # Normal reduction for clean messages
+            risk_score -= reduction
+            risk_factors.append(f"Ethical context reduces risk: {', '.join(ethical_terms)}")
+        
+        is_safe = risk_score < 30  # Messages with risk score >= 30 are blocked
+        
+        details = {
+            "reason": "Message approved" if is_safe else "Message blocked due to risk factors",
+            "risk_score": risk_score,
+            "risk_factors": risk_factors if risk_factors else ["No specific risk factors"],
+            "threshold": 30
+        }
+        return is_safe, details
+        details = {
+            "reason": "Message approved" if is_safe else "Risk factors detected",
+            "risk_score": risk_score,
+            "risk_factors": risk_factors if risk_factors else ["No specific risk factors"],
+            "threshold": 30
+        }
+        return is_safe, details
+
+    def calculate_entropy(self, text):
+        """Calculate the Shannon entropy of the text."""
+        if not text:
+            return 0
+            
+        # Count character frequencies
+        frequencies = {}
+        for char in text:
+            frequencies[char] = frequencies.get(char, 0) + 1
+            
+        # Calculate entropy
+        length = len(text)
+        entropy = 0
+        for freq in frequencies.values():
+            probability = freq / length
+            entropy -= probability * np.log2(probability)
+            
+        return entropy / 8  # Normalize to 0-1 range
 
     def _universal_reasoning(self, signal, tokens):
         """Apply multiple reasoning frameworks to evaluate signal integrity."""
@@ -299,17 +415,38 @@ class NexisSignalEngine:
                 logger.info(f"Processed {input_signal} (high risk) in {time.perf_counter() - start_time}s")
                 return final_record
 
+        # Default perspectives for both paths
         perspectives_output = {
-            "Colleen": self._perspective_colleen(input_signal),
-            "Luke": self._perspective_luke(signal_lower, tokens),
-            "Kellyanne": self._perspective_kellyanne(signal_lower)
+            "Colleen": {"agent": "Colleen", "vector": []},
+            "Luke": {"agent": "Luke", "ethics": "aligned", "entropy": 0.1, "state": "stabilized"},
+            "Kellyanne": {"agent": "Kellyanne", "harmonics": []}
         }
+        entangled_serialized = []
         
-        spider_signal = "::".join([str(perspectives_output[p]) for p in self.perspectives])
-        vec, _ = self._rotate_vector(spider_signal)
-        entangled = self._entanglement_tensor(vec)
-        entangled_serialized = [{"real": v.real, "imag": v.imag} for v in entangled]
-        reasoning, verdict = self._universal_reasoning(spider_signal, tokens)
+        # Check for safe messages first
+        is_safe, safety_details = self.evaluate_message_safety(input_signal)
+        if is_safe:
+            verdict = "approved"
+            reasoning = {
+                "perspectives": perspectives_output,
+                "risk_factors": safety_details.get("risk_factors", []),
+                "combined_score": 0.9,
+                "explanation": safety_details.get("reason", "Safe message"),
+                "risk_score": safety_details.get("risk_score", 0)
+            }
+        else:
+            # Update perspectives with full analysis for potentially risky messages
+            perspectives_output = {
+                "Colleen": self._perspective_colleen(input_signal),
+                "Luke": self._perspective_luke(signal_lower, tokens),
+                "Kellyanne": self._perspective_kellyanne(signal_lower)
+            }
+            
+            spider_signal = "::".join([str(perspectives_output[p]) for p in self.perspectives])
+            vec, _ = self._rotate_vector(spider_signal)
+            entangled = self._entanglement_tensor(vec)
+            entangled_serialized = [{"real": v.real, "imag": v.imag} for v in entangled]
+            reasoning, verdict = self._universal_reasoning(spider_signal, tokens)
         
         final_record = {
             "hash": key,

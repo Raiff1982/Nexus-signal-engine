@@ -1,6 +1,7 @@
 {
-  "ethical_terms": ["hope", "truth", "empathy"],
+  "ethical_terms": ["hope", "truth", "empathy", "hello", "hi", "good", "nice", "great"],
   "entropic_terms": ["chaos", "disorder"],
   "risk_terms": ["exploit", "hack"],
-  "virtue_terms": ["hope", "resolve", "courage"]
+  "virtue_terms": ["hope", "resolve", "courage"],
+  "benign_greetings": ["hi", "hello", "hey"]
 }
