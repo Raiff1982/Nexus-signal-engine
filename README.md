@@ -1,6 +1,20 @@
 What is This?
 
-The Nexus Signal Engine is a real-world, agent-driven, adversarially resilient AI signal analysis and memory engine.
+The Nexus Signal Engine is a real-world, agent-driven, adversarially resilient AI signal### Multimodal Analysis Tests
+- ✅ `test_content_features`: Validates content feature extraction and analysis
+- ✅ `test_risk_score_bounds`: Tests risk score calculation boundaries
+
+### Threat Detection Tests
+- ✅ `test_model_persistence`: Ensures models save and load correctly
+- ✅ `test_model_training`: Validates model training and prediction functionality
+
+### Message Processing Tests
+- ✅ Benign Messages: Properly identifies and approves safe content
+  - Simple greetings (e.g., "hi") → Risk Score: 0
+  - Ethical messages (e.g., "hope you have a good day") → Risk Score: -20
+- ✅ Suspicious Messages: Correctly flags potential threats
+  - Risk terms detection (e.g., "exploit")
+  - Special character detection (e.g., obfuscated text)is and memory engine.
 It is designed for those who demand verifiable AI trust, audit-ready reasoning, and full adversarial resistance—not academic fluff or theoretical “AI safety.”
 
 ⸻
@@ -86,18 +100,25 @@ Requirements
 Testing Status
 -------------
 
-The codebase is thoroughly tested with a comprehensive test suite. All tests are currently passing:
+The codebase is thoroughly tested with a comprehensive test suite. Latest test run (September 23, 2025) shows all 11 tests passing successfully in 0.374s.
+
+### Recent Updates
+- Upgraded to modern UTC datetime handling across all modules
+- Enhanced security scanning and validation
+- Improved test documentation and coverage
+
+### Test Results by Category
 
 ### Behavior Detection Tests
 - ✅ `test_behavior_pattern`: Validates behavior pattern creation and validation
 - ✅ `test_confidence_bounds`: Tests confidence score validation
 
 ### Pattern Correlation Tests
-- ✅ `test_correlation_pruning`: Validates old correlation pruning functionality
-- ✅ `test_temporal_correlation`: Tests temporal correlation detection
+- ✅ `test_correlation_pruning`: Validates correlation data management
+- ✅ `test_temporal_correlation`: Tests detection of time-based correlations
 
 ### Multimodal Analysis Tests
-- ✅ `test_content_features`: Validates content features creation and validation
+- ✅ `test_content_features`: Validates content feature extraction and validation
 - ✅ `test_risk_score_bounds`: Tests risk score validation boundaries
 
 ### Threat Detection Tests
@@ -105,11 +126,21 @@ The codebase is thoroughly tested with a comprehensive test suite. All tests are
 - ✅ `test_model_training`: Validates model training and prediction functionality
 
 ### Threat Scoring Tests
-- ✅ `test_benign_scoring`: Tests scoring of benign activity
-- ✅ `test_component_weights`: Validates component weight calculations
-- ✅ `test_threat_scoring`: Tests scoring of threatening activity
+- ✅ `test_benign_scoring`: Validates scoring of non-threatening content
+- ✅ `test_component_weights`: Tests component weight calculations and thresholds
+- ✅ `test_threat_scoring`: Validates scoring of potentially harmful content
 
-Last test run: September 23, 2025 - All 11 tests passed successfully (0.374s)
+### Test Coverage
+The test suite provides comprehensive coverage across all major components:
+- Input validation and sanitization
+- Pattern detection and correlation
+- Risk scoring and threat assessment
+- Model persistence and training
+- Concurrent processing and memory management
+- Configuration hot-reloading
+- Special character and Unicode handling
+
+For detailed test documentation and guidelines for adding new tests, see `docs/testing.md`.
 
 ⸻
 
