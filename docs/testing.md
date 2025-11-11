@@ -1,3 +1,30 @@
+# Testing guide
+
+This document explains how to run the project's tests and how to execute the focused Immortal Aegis ↔ Nexis integration test.
+
+Running the full test suite
+--------------------------
+
+From the repository root (recommended inside your project's virtualenv):
+
+```powershell
+python -m pytest -q
+```
+
+Focused Immortal bridge test
+----------------------------
+
+To run only the focused integration test that exercises the bridge between Nexis and Aegis:
+
+```powershell
+python -m pytest -q tests/test_immortal_bridge.py
+```
+
+Notes
+-----
+- The focused bridge test may instantiate a temporary `.db` SQLite file to satisfy Nexis's memory path validation.
+- If you have a full `immortal_aegis` implementation in the repo, the bridge will use it. If not, a small shim exists for demo/test purposes.
+- See `docs/aegis_behavior.md` for details on Aegis behavior and tuning.
 # Testing Guide
 
 ## Overview

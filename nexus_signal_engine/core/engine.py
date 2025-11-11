@@ -21,7 +21,9 @@ import logging
 import time
 from typing import Any, Dict, Optional, Union
 import threading
-from time import time
+# Avoid importing `time` function into the module namespace which
+# shadows the `time` module and causes `time.perf_counter` to fail.
+# Use `time.time()` where a timestamp is required.
 
 from ..hoax import HoaxFilter
 
@@ -42,10 +44,10 @@ class SecurityLogger:
     def _setup_logger(self):
         """Configure the security logger with proper formatting and handlers."""
         # Create formatters
+        # Keep a concise, safe formatter so ordinary log records that do
+        # not include security context fields don't fail formatting.
         detailed_formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s - '
-            '[security_event: %(security_event)s] '
-            '[ip: %(ip)s] [user: %(user)s] [session: %(session)s]'
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         )
         
         # File handler for all security events
@@ -104,7 +106,7 @@ class NexisSignalEngine:
         self._rate_limit_lock = threading.Lock()
         self._tokens = 100  # Initial token count
         self._token_rate = 10  # Tokens per second
-        self._last_update = time()
+        self._last_update = time.time()
         self._max_tokens = 100
         
         # Initialize configuration for lenient content handling
@@ -146,7 +148,7 @@ class NexisSignalEngine:
         Thread-safe implementation of the token bucket algorithm.
         """
         with self._rate_limit_lock:
-            now = time()
+            now = time.time()
             time_passed = now - self._last_update
             self._tokens = min(
                 self._max_tokens,

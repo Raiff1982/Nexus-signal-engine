@@ -48,14 +48,6 @@ class NexisSignalEngine:
     def __init__(self, memory_path="memory.db", entropy_threshold=0.08, config_path="config.json", max_memory_entries=10000, memory_ttl_days=30, fuzzy_threshold=80, max_db_size_mb=100):
         """
         Initialize the NexisSignalEngine for signal processing and analysis.
-        """
-        self.config = {
-            "risk_terms": ["exploit", "hack", "malware", "virus"],
-            "benign_greetings": ["hi", "hello", "hey", "greetings"],
-            "ethical_terms": ["hope", "truth", "empathy", "good"],
-            "entropy_threshold": entropy_threshold,
-            "fuzzy_threshold": fuzzy_threshold
-        }
 
         Args:
             memory_path (str): Path to SQLite database for storing signal data.
@@ -66,6 +58,14 @@ class NexisSignalEngine:
             fuzzy_threshold (int): Fuzzy matching similarity threshold (0-100).
             max_db_size_mb (int): Maximum database size in MB before rotation.
         """
+
+        self.config = {
+            "risk_terms": ["exploit", "hack", "malware", "virus"],
+            "benign_greetings": ["hi", "hello", "hey", "greetings"],
+            "ethical_terms": ["hope", "truth", "empathy", "good"],
+            "entropy_threshold": entropy_threshold,
+            "fuzzy_threshold": fuzzy_threshold
+        }
         self.memory_path = self._validate_path(memory_path)
         self.entropy_threshold = entropy_threshold
         self.max_memory_entries = max_memory_entries
@@ -170,16 +170,23 @@ class NexisSignalEngine:
                         INSERT OR REPLACE INTO memory (hash, record, timestamp, integrity_hash)
                         VALUES (?, ?, ?, ?)
                     """, (hash_val, record_json, record['timestamp'], integrity_hash))
-                    cursor.execute("""
-                        INSERT OR REPLACE INTO memory_fts (rowid, input, intent_signature, reasoning, verdict)
-                        VALUES (?, ?, ?, ?, ?)
-                    """, (
-                        hash_val,
-                        record['input'],
-                        intent_str,
-                        reasoning_str,
-                        record.get('verdict', '')
-                    ))
+                    # Insert into the FTS table without forcing rowid to be the
+                    # textual hash (FTS rowid expects an integer). Use a simple
+                    # insert; keeping this optional and tolerant avoids
+                    # datatype mismatches when hash values are strings.
+                    try:
+                        cursor.execute("""
+                            INSERT OR REPLACE INTO memory_fts (input, intent_signature, reasoning, verdict)
+                            VALUES (?, ?, ?, ?)
+                        """, (
+                            record.get('input', ''),
+                            intent_str,
+                            reasoning_str,
+                            record.get('verdict', '')
+                        ))
+                    except sqlite3.Error:
+                        # Don't let FTS errors block saving the core memory table
+                        logger.exception("Failed to update memory_fts; continuing")
                 conn.commit()
 
     def _prune_and_rotate_memory(self):
@@ -192,7 +199,9 @@ class NexisSignalEngine:
                     DELETE FROM memory
                     WHERE timestamp < ?
                 """, ((now - self.memory_ttl).isoformat(),))
-                cursor.execute("DELETE FROM memory_fts WHERE rowid NOT IN (SELECT hash FROM memory)")
+                # Skipping strict rowid-based pruning for memory_fts because
+                # the memory table uses a textual hash as primary key and
+                # forcing rowid equality can cause datatype mismatches.
                 conn.commit()
                 cursor.execute("SELECT COUNT(*) FROM memory")
                 count = cursor.fetchone()[0]

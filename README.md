@@ -142,6 +142,8 @@ The test suite provides comprehensive coverage across all major components:
 
 For detailed test documentation and guidelines for adding new tests, see `docs/testing.md`.
 
+For information about how the Immortal Aegis interacts with Nexis and how to tune it, see `docs/aegis_behavior.md`.
+
 ⸻
 
 Citation
@@ -164,6 +166,16 @@ A: Each “agent” represents a different perspective in ethical or signal reas
 
 Q: Is this really adversarially robust?
 A: Yes—try to break it with obfuscation, leetspeak, prompt injection, or high-entropy word salad. Then check the test suite.
+
+### Aegis bridge behavior (important note)
+
+The Immortal Aegis is not a per-sample moral overrider. The bridge between Nexis and Aegis only intervenes when Aegis reports a regenerative lifecycle event (action == "regenerated"). In practice this means:
+
+- Nexis may label a single sample as "unaligned", "violated", or "misaligned" for moral/ethical signals and yet still return a non-blocking verdict for that sample.
+- Aegis does not second-guess Nexis on single samples. It monitors long-term memory health (volatility, density, average virtue) and will only step in to change verdicts when the system-wide health triggers regeneration.
+- The smoke-test control case (safe-ish text) demonstrates this: Nexis may mark the sample ethically "unaligned", but Aegis will take action "none" (no regeneration) when volatility is low — so the bridge will not override the original Nexis verdict.
+
+This behavior prevents per-sample fluctuations from causing unnecessary human-review noise; Aegis acts as a systemic safety layer rather than a per-signal censor.
 
 Q: Who built this?
 A: Jonathan Harrison (Raiff1982), published on Zenodo and open-sourced for the world to audit, use, or improve.
